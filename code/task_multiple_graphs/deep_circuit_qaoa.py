@@ -79,6 +79,8 @@ def qaoa_random_gammas(old_graph: nx.Graph, new_graph: nx.Graph, gamma_star: lis
     cr = ClassicalRegister(qubits)
     qc = QuantumCircuit(qr, cr)
     qc.h(range(qubits))
+    ##### We have to add extra layers in which we use new beta and gamma which are to be optimized
+    ##### In the old layers, we use already optimized beta and gamma however the edges are takedn indeed from the new graph only
     for l in range(len(opt_beta)):
         for i in old_graph.nodes():
             qc.rx(theta=opt_beta[l], qubit=i)

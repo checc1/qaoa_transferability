@@ -94,6 +94,25 @@ def qaoa_random_gammas(old_graph: nx.Graph, new_graph: nx.Graph, gamma_star: lis
             qc.rz(phi=gamma_star[l], qubit=v)
             qc.cx(control_qubit=u, target_qubit=v)
 
+    ### I think we cannot use different gammas in the same layer "l" for differenr edges. The idea is to add extra layers and use new beta as well as new gammas for those layers. Something like below.
+    #for l in range(len(total_layers)):
+    #    if l<layers:
+    #        for i in new_graph.nodes():
+    #            qc.rx(theta=opt_beta[layers + l], qubit=i)
+    #        for (i,j) in new_edges:
+    #            qc.cx(control_qubit=i, target_qubit=j)
+    #            qc.rz(phi=opt_gamma[l], qubit=j)
+    #            qc.cx(control_qubit=i, target_qubit=j)
+    #    elif l>=layers:
+    #        for i in new_graph.nodes():
+    #            qc.rx(theta=beta_star[gamma_star_layers + layers - l], qubit=i)
+    #        for (u,v) in extra_edges:
+    #            qc.cx(control_qubit=u, target_qubit=v)
+    #            qc.rz(phi=gamma_star[layers-l], qubit=v)
+    #            qc.cx(control_qubit=u, target_qubit=v)
+
+    # where "total_layers" is the number of total layers to be optimized for the nrew graph wihich is equal to the sum of number of layers optimized for graph 1 and the number of extra layers to be optimized for graph 2
+
     qc.measure(range(qubits), range(qubits))
     return (qc, [set(opt_gamma), set(opt_beta)])
 

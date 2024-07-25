@@ -1,12 +1,13 @@
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 import networkx as nx
 import qiskit_aer as q_aer
-from utilities import execution, invert_counts, get_max_eigenstate
+from utilities import execution, invert_counts
+#, get_max_eigenstate
 from maxcut import *
 import numpy as np
 from scipy.optimize import minimize
 #import time
-from RandomGraphGeneration import RandomGraph, plot
+#from RandomGraphGeneration import RandomGraph, plot
 #from qiskit.visualization import plot_histogram
 import matplotlib.pyplot as plt
 #from qiskit.circuit import Parameter
@@ -16,6 +17,10 @@ from qiskit.visualization import plot_histogram
 
 
 ## I PRIMI P PARAMS SONO GAMMA!!!
+
+def RandomGraph(node, prob, seed):
+    G = nx.erdos_renyi_graph(node, prob, seed)
+    return G
 
 
 shots = 100_000
@@ -110,25 +115,29 @@ def QAOA(graph, beta, gamma, layers):
         qc.h(i)
     for l in range(layers):
         for i in range(n):
-            qc.rx(theta=2*beta[i], qubit=i)
+            #qc.rx(theta=2*beta[i], qubit=i)
+            qc.rx(theta=2*beta[l], qubit=i)
         for (i, j) in edges:
             qc.cx(control_qubit=i, target_qubit=j)
-            qc.rz(phi=2*gamma[i], qubit=j)  
+            #qc.rz(phi=2*gamma[i], qubit=j)  
+            qc.rz(phi=2*gamma[l], qubit=j)  
             qc.cx(control_qubit=i, target_qubit=j)
     qc.measure_all()
     return qc
 
 
 def assign_params(qc, opt_params):
-    gamma_opt = opt_params[:layers]
-    beta_opt = opt_params[layers:]
+    #gamma_opt = opt_params[:layers]
+    #beta_opt = opt_params[layers:]
+    gamma_opt = opt_params[layers:]
+    beta_opt = opt_params[:layers]
     qaoa = qc.merged_qaoa_circuit(gamma_opt, beta_opt)
     return qaoa
 
 
 def solve(graph, p, start_params):
     obj_function = get_objective(p, graph)
-    sol = minimize(obj_function, start_params, method="COBYLA", options={"maxiter": 500, "disp": False, "rhobeg": 0.0001}, tol=1e-6)
+    sol = minimize(obj_function, start_params, method="COBYLA", options={"maxiter": 100, "disp": False, "rhobeg": 0.0001}, tol=1e-6)
     return sol
 
 
@@ -165,8 +174,8 @@ def MultiRun(chosen_seed: int, layers: int) -> dict:
 
 
 if __name__ == "__main__":
-    g = RandomGraph(node=6, prob=0.7, seed=8)
-    layers = 8
+    g = RandomGraph(node=4, prob=0.7, seed=9)
+    layers = 7
     random_gamma_beta = np.random.rand(2*layers)
     #qaoa_circ = QAOA(graph=g, beta=random_gamma_beta[:layers], gamma=random_gamma_beta[layers:], layers=layers)
     sol = solve(graph=g, p=layers, start_params=random_gamma_beta)

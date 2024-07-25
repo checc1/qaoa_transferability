@@ -17,7 +17,9 @@ def compute_energy(counts, G):
         obj_for_meas = maxcut_obj(meas, G)
         E += obj_for_meas * meas_count
         tot_counts += meas_count
-    return E / tot_counts
+    #final_energy = 0.5*(1+E/tot_counts)
+    return E/tot_counts
+    #return final_energy
 
 
 def get_most_frequent_state(frequencies):

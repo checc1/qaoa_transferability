@@ -28,11 +28,11 @@ def most_frequent(dict_count: dict, G):
     return min_keys, min_value
     
 
-seed = 339
-np.random.seed(seed)
-qubits = 5
-dev = qml.device("lightning.qubit", wires=qubits, shots=1024)
 
+dev = qml.device("lightning.qubit", wires=18, shots=100000)
+
+#opt_params = [[-0.19546215, -0.42325005, -0.40332378], [0.37855207, 0.38593363, 0.26512986]] ## with seed=349 and stepsize=0.1 and nqubits = 8 and layers = 3
+opt_params = [[-0.11657826, -0.24156693, -0.27128321, -0.34703595], [ 0.36039333,  0.23176248,  0.23125999,  0.1549918 ]] # with seed = 349, stepsize = 0.1, nlayers = 4 and nqubits = 8
 
 #def bitstring_to_int(bit_string_sample):  # This was required because they were using qml.sample(). Now we do not need it.
 #    bit_string = "".join(str(bs) for bs in bit_string_sample)
@@ -67,10 +67,9 @@ def QAOAAnsatz(gamma_set, beta_set, edge=None, layers=1):
     return qml.expval(H)
 
 
-def qaoa_execution(layers):
+def qaoa_execution(layers, instance):
+
     print("\np={:d}".format(layers))
-    # Intializing parameters near zero. But please check how good the minimization is if the 0.01 factor is removed.
-    starting_params = 0.01 * np.random.rand(2, layers, requires_grad=True)
     
     def obj_function(params):
         gammas = params[0]
@@ -79,16 +78,39 @@ def qaoa_execution(layers):
         for edge in graph:
             cost -= 0.5 * (1 - QAOAAnsatz(gamma_set=gammas, beta_set = betas, edge=edge, layers=layers))
         return cost
-    
-    opt = qml.AdagradOptimizer(stepsize=0.4) # The stepsize can be varied when changing number of nodes and layers. Particularly, for large number of layers (or trainable parameters), stepsize should be kept low, e.g. "stepsize = 0.1"
-    params = starting_params
-    steps = 20
-
-    for i in range(steps):
-        params = opt.step(obj_function, params)
-        print(f"Iteration {i}:", obj_function(params=params))
         
-    print("Optimum parameters are: ", params)
+    def obj_function_second_opt(params_new):
+        params = np.concatenate((params_old, np.reshape(params_new, (2, 1))), axis = 1)
+        gammas = params[0]
+        betas = params[1]
+        cost = 0
+        for edge in graph:
+            cost -= 0.5 * (1 - QAOAAnsatz(gamma_set=gammas, beta_set = betas, edge=edge, layers=layers))
+        return cost
+    
+    opt = qml.AdagradOptimizer(stepsize=0.1) # The stepsize can be varied when changing number of nodes and layers. Particularly, for large number of layers (or trainable parameters), stepsize should be kept low, e.g. "stepsize = 0.1"
+    steps = 5
+    
+    if instance == "first_optimization":
+        params = starting_params
+        for i in range(steps):
+            params = opt.step(obj_function, params)
+            print(f"Iteration {i}:", obj_function(params=params))
+
+        print("Optimum parameters are: ", params)
+        
+    elif instance == "transfer_params":
+        params = opt_params
+        
+    elif instance == "second_optimization":
+        params = np.array(opt_params)
+        params_old = np.delete(params, layers-1, 1) # delete last column
+        params_new = params[:, 3] # extract last column
+        for i in range(steps):
+            params_new = opt.step(obj_function_second_opt, params_new) #update last column
+            params = np.c_[ params_old, params_new]   # add last column to the old matrix
+            print(f"Iteration {i}:", obj_function(params))
+        
     
     #bit_strings = []
     #n_samples = 10
@@ -111,18 +133,21 @@ def qaoa_execution(layers):
     counts = QAOAAnsatz(params[0], params[1], edge=None, layers=layers)
     
     min_key, min_energy = most_frequent(counts, graph_sorgent) ## We calculate the bitstrings that correspond to maximum cut value, and those values. They are the ground states and energies "H_c".
-    print("The ground states are: ", min_key, "with energy: ", min_energy)
+    #print("The ground states are: ", min_key, "with energy: ", min_energy)
     
     most_freq_bit_string = max(counts, key = counts.get) ## We get the bitstring that has highest frequency
     res = [int(x) for x in str(most_freq_bit_string)]  ## We convert it to an array of bits
     maxcut = maxcut_obj(res, graph_sorgent) ## We get the cut value for that bitstring
-    print("Most frequent bit-string is: ", most_freq_bit_string) ## We check what is that bitstring
-    print("The cut value of most frequent bit-string is: ", maxcut) ## We check if the cut value is same as the ground state energy (min_energy)
+    #print("Most frequent bit-string is: ", most_freq_bit_string) ## We check what is that bitstring
+    #print("The cut value of most frequent bit-string is: ", maxcut) ## We check if the cut value is same as the ground state energy (min_energy)
     
     approximation_ratio = obj_function(params)/min_energy
 
     #return -obj_function(params), bit_strings
-    return -obj_function(params)
+    if instance == "first_optimization":
+        return -obj_function(params)/-min_energy, params
+    else:
+        return -obj_function(params)/-min_energy
 
 
 #def plot_results(bitstrings1, bitstrings2):
@@ -149,15 +174,58 @@ def qaoa_execution(layers):
 
 
 if __name__ == "__main__":
-    graph_sorgent = RandomGraph(node=qubits, prob=0.7, seed=seed)  # the graph remains same CHECKED!
-    graph = list(graph_sorgent.edges)
+    
+    #instance = "first_optimization"
+    #instance = "transfer_params"
+    instance = "second_optimization"
+    layers = 4
+    if instance == "first_optimization":
+        seed = 349
+        np.random.seed(seed)
+        qubits = 8
+        print("No. of nodes: ", qubits)
+        # Intializing parameters near zero. But please check how good the minimization is if the 0.01 factor is removed.
+        starting_params = 0.01*np.random.rand(2, layers, requires_grad=True)
+        graph_sorgent = RandomGraph(node=qubits, prob=0.7, seed=349)  # the graph remains same CHECKED!
+        graph = list(graph_sorgent.edges)
+        approximation_ratio = qaoa_execution(layers, instance)
+        print("Approximation ratio is: ", approximation_ratio)
+    elif instance == "transfer_params":
+        #seed = np.random.randint(9, 1000, 20)
+        for qubits in range(4, 19, 2):
+            f = open(f"complete_params_transfer_{str(qubits)}.txt", "w")
+            print("No. of nodes: ", qubits)
+            for s in range(40):
+                seed = np.random.randint(400)
+                print("Seed: ", seed)
+                graph_sorgent = RandomGraph(node=qubits, prob=0.7, seed=seed)
+                graph = list(graph_sorgent.edges)
+                approximation_ratio = qaoa_execution(layers, instance)
+                f.write(str(seed) + "	" + str(approximation_ratio))
+                f.write("\n")
+                print("Approximation ratio is: ", approximation_ratio)
+    elif instance == "second_optimization":
+        for qubits in range(4, 19, 2):
+            f = open(f"second_optimization_{str(qubits)}.txt", "w")
+            print("No. of nodes: ", qubits)
+            for s in range(40):
+                seed = np.random.randint(400)
+                print("Seed: ", seed)
+                graph_sorgent = RandomGraph(node=qubits, prob=0.7, seed=seed)
+                graph = list(graph_sorgent.edges)
+                approximation_ratio = qaoa_execution(layers, instance)
+                f.write(str(seed) + "	" + str(approximation_ratio))
+                f.write("\n")
+                print("Approximation ratio is: ", approximation_ratio)
+    
+    
     #bitstrings1 = qaoa_execution(layers=2)[1]
-    bitstrings2 = qaoa_execution(layers=3)
+    
     #bitstring_list = [c for c in (str(bitstrings2)).split()]
     #bitstring_list = str(bitstrings2)
     #bitstring1_list = [j for j in bitstring_list]
     #print(bitstring_list)
-    print(bitstrings2)
+    
     
     
     #plot(graph_sorgent)

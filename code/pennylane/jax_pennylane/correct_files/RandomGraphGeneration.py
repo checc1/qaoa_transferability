@@ -1,5 +1,4 @@
 import networkx as nx
-import matplotlib.pyplot as plt
 
 
 def RandomGraph(node, prob, seed) -> nx.Graph:
@@ -10,4 +9,3 @@ def RandomGraph(node, prob, seed) -> nx.Graph:
 def plot(graph):
     figure = nx.draw_kamada_kawai(G=graph, with_labels=True)
     return figure
-

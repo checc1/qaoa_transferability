@@ -29,7 +29,7 @@ def most_frequent(dict_count: dict, G):
     
 
 
-dev = qml.device("lightning.qubit", wires=18, shots=100000)
+dev = qml.device("lightning.qubit", wires=8, shots=100000)
 
 #opt_params = [[-0.19546215, -0.42325005, -0.40332378], [0.37855207, 0.38593363, 0.26512986]] ## with seed=349 and stepsize=0.1 and nqubits = 8 and layers = 3
 opt_params = [[-0.11657826, -0.24156693, -0.27128321, -0.34703595], [ 0.36039333,  0.23176248,  0.23125999,  0.1549918 ]] # with seed = 349, stepsize = 0.1, nlayers = 4 and nqubits = 8
@@ -192,7 +192,7 @@ if __name__ == "__main__":
         print("Approximation ratio is: ", approximation_ratio)
     elif instance == "transfer_params":
         #seed = np.random.randint(9, 1000, 20)
-        for qubits in range(4, 19, 2):
+        for qubits in range(5, 6, 2):
             f = open(f"complete_params_transfer_{str(qubits)}.txt", "w")
             print("No. of nodes: ", qubits)
             for s in range(40):
@@ -205,7 +205,7 @@ if __name__ == "__main__":
                 f.write("\n")
                 print("Approximation ratio is: ", approximation_ratio)
     elif instance == "second_optimization":
-        for qubits in range(4, 19, 2):
+        for qubits in range(8, 9, 2):
             f = open(f"second_optimization_{str(qubits)}.txt", "w")
             print("No. of nodes: ", qubits)
             for s in range(40):

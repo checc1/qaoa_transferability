@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 
 jax.config.update("jax_enable_x64", True)
 
-save_path = "/home/fv/storage1/qml/QAOA_transferability/res_selfopt"
+save_path = "/home/fv/storage1/qml/QAOA_transferability/updated_selfopt"
 shots = 100_000
 seed = 40
 #qubits = int(sys.argv[1])   ### TODO: WHEN YOU RUN ON THE BASH SCRIPT
@@ -36,8 +36,8 @@ def circuit_qnode(weights: jnp.asarray, graph: nx.Graph, edge) -> qml.expval:
         for j in range(layers):
             GammaCircuit(weights[j, 0], graph)
             BetaCircuit(weights[j, 1], qubits)
-            H = qml.PauliZ(edge[0]) @ qml.PauliZ(edge[1])
-            return qml.expval(H)
+        H = qml.PauliZ(edge[0]) @ qml.PauliZ(edge[1])
+        return qml.expval(H)
     result = qnode(weights)
     return result
 
@@ -67,7 +67,7 @@ def optimization(i, args):
     params = optax.apply_updates(params, updates)
     current_obj_val = obj_function(params)
     print(f"It {i}:", current_obj_val)
-    return current_obj_val, params
+    return current_obj_val, params, opt_state
 
 
 def qaoa_execution(seed: int, graph: nx.Graph, graph_sorgent: nx.Graph) -> tuple:
@@ -85,16 +85,19 @@ def qaoa_execution(seed: int, graph: nx.Graph, graph_sorgent: nx.Graph) -> tuple
     opt_state = optax_optimizer.init(params)
     steps = 200
     prev_obj_val = obj_function(params)
+    num_occurrances = 0
     for i in range(steps):
+
         '''grads = jax.grad(obj_function)(params)
         updates, opt_state = optax_optimizer.update(grads, opt_state)
         params = optax.apply_updates(params, updates)
         current_obj_val = obj_function(params)
         print(f"It {i}:", current_obj_val)'''
-        current_obj_val, params = optimization(i, (obj_function, params, opt_state, optax_optimizer))
+        current_obj_val, params, opt_state = optimization(i, (obj_function, params, opt_state, optax_optimizer))
 
-        if jnp.abs(prev_obj_val - current_obj_val) < threshold:
-            print(f"Stop it {i} with energy: {current_obj_val}")
+        if prev_obj_val - current_obj_val > 0 and prev_obj_val - current_obj_val < threshold:
+            num_occurrances += 1
+        if num_occurrances > 3:
             break
         prev_obj_val = current_obj_val
 
@@ -120,7 +123,7 @@ def experiment() -> list:
     time_list, opt_beta_gamma_res, energy_res, ar_res, counts_res, min_keys = [], [], [], [], [], []
     for s in range(seed):
         print(f"It: {s + 1}")
-        graph_generator = RandomGraph(qubits, prob=0.7, seed=s)
+        graph_generator = RandomGraph(qubits, prob=0.6, seed=s)
         graph = list(graph_generator.edges)
         t0 = time.time()
         energy, counts, opt_beta_gamma, ar, minkey = qaoa_execution(s, graph, graph_generator)
@@ -146,5 +149,5 @@ if __name__ == "__main__":
                             'Approx. ratio': data[3],
                             'Elapsed time': data[4],
                             'Min. key': data[5]})
-    '''data_seed_ = dataset.to_csv(
-        save_path + "/data" + str(seed) + "_qubit" + str(qubits) + ".csv")'''
+    data_seed_ = dataset.to_csv(
+        save_path + "/data" + str(seed) + "_qubit" + str(qubits) + ".csv")

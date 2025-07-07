@@ -154,7 +154,7 @@ def transfer_scalability(seed: float, graph: nx.Graph or list, graph_sorgent: nx
 
 
 def scalability(p_acceptor: int) -> pd.DataFrame:
-    count_graph_target = 10
+    count_graph_target = 40
     ar_list_acceptors, seed_ = [], []
     d_acceptor = []
     edges_acceptor = []

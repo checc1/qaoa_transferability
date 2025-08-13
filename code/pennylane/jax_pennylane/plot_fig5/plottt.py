@@ -53,7 +53,7 @@ def plotttt():
         axs.scatter(np.full_like(ar_vals, x), ar_vals,
                     color=color, s=15, marker="o", alpha=0.7, zorder=2, edgecolor="k")
 
-    labels = ["Full transf.", "2L", "3L","Best Init."]
+    labels = ["Full transf.", "2 Layers", "3 Layers","Best Init."]
     axs.set_xticks(x_vals)
     axs.set_xticklabels(labels, rotation=45, ha='right', fontsize=11)
     medians = [np.median(ar) for ar in all_ar]
@@ -184,7 +184,7 @@ for idx, (ar1, ar2) in enumerate(zip(all_ar, all_ar2)):
     ax.scatter(np.full_like(ar2, x2), ar2, color="lightsteelblue", s=15, alpha=0.5, edgecolor="k", zorder=2)
 
 
-group_labels = ["Full transf.", "2L", "3L", "Best Init.", "Single Layer"]
+group_labels = ["Full transf.", "2 Layers", "3 Layers", "Best Init.", r"$2^{nd} Layer$"]
 ax.set_xticks(x_vals)
 ax.set_xticklabels(group_labels, rotation=45, ha='right', fontsize=11)
 
@@ -203,4 +203,93 @@ custom_lines = [
 ax.legend(handles=custom_lines, loc='lower right', fontsize=14)
 
 plt.tight_layout()
+plt.savefig("boxplot_12_16.pdf", dpi=300)
 plt.show()
+
+
+def plot_weighted():
+    folder = "/Users/francescoaldoventurelli/Downloads/francesco_files_weighted/"
+
+
+    data0 = pd.read_csv(folder + "data50_full_transfer_16.csv")
+
+    data2 = pd.read_csv(folder + "data50_qubit_0thLayers_opt_16.csv")
+
+    data4 = pd.read_csv(folder + "data50_qubit_1stLayers_opt_16.csv")
+
+    data6 = pd.read_csv(folder + "data50_qubit_2layers_opt_16.csv")
+
+    data8 = pd.read_csv(folder + "data50_qubit_2ndLayers_opt_16.csv")
+
+    data9 = pd.read_csv(folder + "data50_qubit_3rdLayers_opt_16.csv")
+
+    data10 = pd.read_csv(folder + "data50_qubit_4thLayers_opt_16.csv")
+
+    data11 = pd.read_csv(folder + "data50_qubit16.csv")
+
+
+
+    total_data16 = [data0, data2, data4, data8, data9, data10, data6, data11]
+    #x_vals = np.arange(1, 8 + 1)
+    all_ar = []
+    for item in total_data16:
+        df = pd.DataFrame(item)
+        ar = df["Approx. ratio"].to_numpy()
+        all_ar.append(ar)
+    #all_ar2 = [df["Approx. ratio"].to_numpy() for df in total_data16]
+
+    fig, ax = plt.subplots(figsize=(4.7, 7))
+    box_width = 0.45
+    x_vals = np.arange(len(all_ar))
+    offset = 0.04
+    positions_model1 = x_vals - offset
+    #positions_model2 = x_vals + offset
+
+    #color12 = "indianred"
+    color16 = "steelblue"
+
+    bp1 = ax.boxplot(all_ar, positions=positions_model1, patch_artist=True, widths=box_width,
+                     boxprops=dict(linestyle='-', linewidth=1, color='k'),
+                     medianprops=dict(color='black'), whiskerprops=dict(color='black', linewidth=1),
+                     capprops=dict(color='black'), flierprops=dict(markerfacecolor='gray', markersize=3))
+
+    for patch in bp1['boxes']:
+        patch.set_facecolor(color16)
+
+
+    for patch in bp2['boxes']:
+        patch.set_facecolor(color16)
+
+    for idx, ar1 in enumerate(all_ar):
+        #x1, x2 = positions_model1[idx], positions_model2[idx]
+        x1 = positions_model1[idx]
+        ax.scatter(x1, np.median(ar1), color="lightsteelblue", edgecolor="k", s=55, zorder=3)
+        #ax.scatter(x2, np.median(ar2), color="lightsteelblue", edgecolor="k", s=55, zorder=3)
+
+        ax.scatter(np.full_like(ar1, x1), ar1, color="lightsteelblue", s=15, alpha=0.7, edgecolor="k", zorder=2)
+        #ax.scatter(np.full_like(ar2, x2), ar2, color="lightsteelblue", s=15, alpha=0.5, edgecolor="k", zorder=2)
+
+    group_labels = ["Full transf.", r"$1^{st} Layer$", r"$2^{nd} Layer$", r"$3^{rd} Layer$",
+                    r"$4^{th} Layer$", r"$5^{th} Layer$", "2 Layers", "Full opt."]
+    ax.set_xticks(x_vals)
+    ax.set_xticklabels(group_labels, rotation=45, ha='right', fontsize=11)
+
+    # Style
+    ax.set_ylim(0.75, 0.98)
+    yticks = ax.get_yticks()
+    ax.set_yticklabels([f"${tick:.2f}$" for tick in yticks], fontsize=11)
+    ax.tick_params(labelsize=16)
+    ax.grid(axis='x', linestyle='--', alpha=0.7)
+
+    # Legend
+    custom_lines = [
+        plt.Line2D([0], [0], color=color16, lw=8, label='N = 16'),
+    ]
+    ax.legend(handles=custom_lines, loc='lower right', fontsize=14)
+
+    plt.tight_layout()
+    plt.savefig(folder + "weighted_boxplot.pdf", dpi=300)
+    plt.show()
+
+
+plot_weighted()

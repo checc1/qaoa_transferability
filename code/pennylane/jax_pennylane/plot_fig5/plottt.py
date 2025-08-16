@@ -143,7 +143,7 @@ plt.show()"""
 all_ar = [df["Approx. ratio"].to_numpy() for df in total_data12]
 all_ar2 = [df["Approx. ratio"].to_numpy() for df in total_data16]
 
-fig, ax = plt.subplots(figsize=(4, 6))
+fig, ax = plt.subplots(figsize=(5.5, 4.))
 box_width = 0.3
 x_vals = np.arange(len(all_ar))
 offset = 0.18
@@ -151,22 +151,22 @@ positions_model1 = x_vals - offset
 positions_model2 = x_vals + offset
 
 
-color12 = "indianred"
-color16 = "steelblue"
+color12 = "lightcoral"
+color16 = "lightskyblue"
 
 bp1 = ax.boxplot(all_ar, positions=positions_model1, patch_artist=True, widths=box_width,
-                 boxprops=dict(linestyle='-', linewidth=1, color='k'),
-                 medianprops=dict(color='black'), whiskerprops=dict(color='black', linewidth=1),
-                 capprops=dict(color='black'), flierprops=dict(markerfacecolor='gray', markersize=3))
+                 boxprops=dict(linestyle='-', linewidth=1, color='dimgray'),
+                 medianprops=dict(color='k'), whiskerprops=dict(color='dimgray', linewidth=1),
+                 capprops=dict(color='dimgray'), flierprops=dict(markerfacecolor='gray', markersize=3))
 
 for patch in bp1['boxes']:
     patch.set_facecolor(color12)
 
 
 bp2 = ax.boxplot(all_ar2, positions=positions_model2, patch_artist=True, widths=box_width,
-                 boxprops=dict(linestyle='-', linewidth=1, color='k'),
-                 medianprops=dict(color='black'), whiskerprops=dict(color='black', linewidth=1),
-                 capprops=dict(color='black'), flierprops=dict(markerfacecolor='gray', markersize=3))
+                 boxprops=dict(linestyle='-', linewidth=1, color='dimgray'),
+                 medianprops=dict(color='k'), whiskerprops=dict(color='dimgray', linewidth=1),
+                 capprops=dict(color='dimgray'), flierprops=dict(markerfacecolor='gray', markersize=3))
 
 for patch in bp2['boxes']:
     patch.set_facecolor(color16)
@@ -176,15 +176,15 @@ for idx, (ar1, ar2) in enumerate(zip(all_ar, all_ar2)):
     x1, x2 = positions_model1[idx], positions_model2[idx]
 
 
-    ax.scatter(x1, np.median(ar1), color="firebrick", edgecolor="k", s=55, zorder=3)
-    ax.scatter(x2, np.median(ar2), color="lightsteelblue", edgecolor="k", s=55, zorder=3)
+    ax.scatter(x1, np.median(ar1), color="coral", edgecolor="dimgray", s=55, zorder=3)
+    ax.scatter(x2, np.median(ar2), color="skyblue", edgecolor="dimgray", s=55, zorder=3)
 
 
-    ax.scatter(np.full_like(ar1, x1), ar1, color="firebrick", s=15, alpha=0.7, edgecolor="k", zorder=2)
-    ax.scatter(np.full_like(ar2, x2), ar2, color="lightsteelblue", s=15, alpha=0.5, edgecolor="k", zorder=2)
+    ax.scatter(np.full_like(ar1, x1), ar1, color="coral", s=15, alpha=0.7, edgecolor="dimgray", zorder=2)
+    ax.scatter(np.full_like(ar2, x2), ar2, color="skyblue", s=15, alpha=0.5, edgecolor="dimgray", zorder=2)
 
 
-group_labels = ["Full transf.", "2 Layers", "3 Layers", "Best Init.", r"$2^{nd} Layer$"]
+group_labels = ["Full transf.", "2 Layers", "3 Layers", "Warm start", r"$2^{nd}$ Layer"]
 ax.set_xticks(x_vals)
 ax.set_xticklabels(group_labels, rotation=45, ha='right', fontsize=11)
 
@@ -238,7 +238,7 @@ def plot_weighted():
         all_ar.append(ar)
     #all_ar2 = [df["Approx. ratio"].to_numpy() for df in total_data16]
 
-    fig, ax = plt.subplots(figsize=(4.7, 7))
+    fig, ax = plt.subplots(figsize=(10, 6))
     box_width = 0.45
     x_vals = np.arange(len(all_ar))
     offset = 0.04
@@ -246,12 +246,12 @@ def plot_weighted():
     #positions_model2 = x_vals + offset
 
     #color12 = "indianred"
-    color16 = "steelblue"
+    color16 = "skyblue"
 
     bp1 = ax.boxplot(all_ar, positions=positions_model1, patch_artist=True, widths=box_width,
-                     boxprops=dict(linestyle='-', linewidth=1, color='k'),
-                     medianprops=dict(color='black'), whiskerprops=dict(color='black', linewidth=1),
-                     capprops=dict(color='black'), flierprops=dict(markerfacecolor='gray', markersize=3))
+                     boxprops=dict(linestyle='-', linewidth=1, color='dimgray'),
+                     medianprops=dict(color='black'), whiskerprops=dict(color='dimgray', linewidth=1),
+                     capprops=dict(color='dimgray'), flierprops=dict(markerfacecolor='gray', markersize=3))
 
     for patch in bp1['boxes']:
         patch.set_facecolor(color16)
@@ -263,10 +263,10 @@ def plot_weighted():
     for idx, ar1 in enumerate(all_ar):
         #x1, x2 = positions_model1[idx], positions_model2[idx]
         x1 = positions_model1[idx]
-        ax.scatter(x1, np.median(ar1), color="lightsteelblue", edgecolor="k", s=55, zorder=3)
+        ax.scatter(x1, np.median(ar1), color="lightskyblue", edgecolor="dimgray", s=55, zorder=3)
         #ax.scatter(x2, np.median(ar2), color="lightsteelblue", edgecolor="k", s=55, zorder=3)
 
-        ax.scatter(np.full_like(ar1, x1), ar1, color="lightsteelblue", s=15, alpha=0.7, edgecolor="k", zorder=2)
+        ax.scatter(np.full_like(ar1, x1), ar1, color="lightskyblue", s=15, alpha=0.7, edgecolor="dimgray", zorder=2)
         #ax.scatter(np.full_like(ar2, x2), ar2, color="lightsteelblue", s=15, alpha=0.5, edgecolor="k", zorder=2)
 
     group_labels = ["Full transf.", r"$1^{st} Layer$", r"$2^{nd} Layer$", r"$3^{rd} Layer$",

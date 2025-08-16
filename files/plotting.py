@@ -1,13 +1,13 @@
 from os import PathLike
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
 
-path_12 = "../files/single_layer_opt/nodes_12/20_seeds/"
-path_16 = "../files/single_layer_opt/nodes_16/20_seeds/"
-path_18 = "../files/single_layer_opt/nodes_18/20_seeds/"
+abs_path = "/Users/francescoaldoventurelli/qml/qaoa_transf/files/francesco_files/single_layer_opt"
+path_12 = "/nodes_12/20_seeds/"
+path_16 = "/nodes_16/20_seeds/"
+path_18 = "/nodes_18/20_seeds/"
 
 l0, l1, l2, l3, l4 = ("data50_qubit_0thLayers_opt_12_edit.csv",
                        "data50_qubit_1stLayers_opt_12_edit.csv",
@@ -33,9 +33,9 @@ list_paths18 = [l0_18, l1_18, l2_18, l3_18, l4_18]
 
 
 def multi_plot():
-    paths = np.array([[path_12 + l0, path_12 + l1, path_12 + l2, path_12 + l3, path_12 + l4],
-                     [path_16 + l0_16, path_16 + l1_16, path_16 + l2_16, path_16 + l3_16, path_16 + l4_16],
-                      [path_18 + l0_18, path_18 + l1_18, path_18 + l2_18, path_18 + l3_18, path_18 + l4_18]], dtype=str or PathLike[str])
+    paths = np.array([[abs_path + path_12 + l0, abs_path + path_12 + l1, abs_path + path_12 + l2, abs_path + path_12 + l3, abs_path + path_12 + l4],
+                     [abs_path + path_16 + l0_16, abs_path + path_16 + l1_16, abs_path + path_16 + l2_16, abs_path + path_16 + l3_16, abs_path + path_16 + l4_16],
+                      [abs_path + path_18 + l0_18, abs_path + path_18 + l1_18, abs_path + path_18 + l2_18, abs_path + path_18 + l3_18, abs_path + path_18 + l4_18]], dtype=str or PathLike[str])
     fig = plt.figure(figsize=(6, 4.5))
     colors = ["orchid", "slateblue", "limegreen"]
     edgecolors = ["darkmagenta", "darkslateblue", "seagreen"]
@@ -58,9 +58,9 @@ def multi_plot():
     plt.show()
 
 
-adapted_path_12 = [path_12 + p for p in list_paths12]
-adapted_path_16 = [path_16 + p for p in list_paths16]
-adapted_path_18 = [path_18 + p for p in list_paths18]
+adapted_path_12 = [abs_path + path_12 + p for p in list_paths12]
+adapted_path_16 = [abs_path + path_16 + p for p in list_paths16]
+adapted_path_18 = [abs_path + path_18 + p for p in list_paths18]
 
 def single_plot(path_list: list[str] | list[PathLike], full_transfer: np.ndarray):
     fig = plt.figure(figsize=(6, 4))
@@ -96,8 +96,9 @@ def single_plot(path_list: list[str] | list[PathLike], full_transfer: np.ndarray
     plt.minorticks_on()
     plt.legend(fontsize=16, frameon=False, loc=4)
     plt.tight_layout()
-    plt.savefig("/home/francesco/PycharmProjects/qaoa_transferability/imgs/single_layer_opt_18.png", dpi=300, bbox_inches='tight')
+    #plt.savefig("/home/francesco/PycharmProjects/qaoa_transferability/imgs/single_layer_opt_18.png", dpi=300, bbox_inches='tight')
     plt.show()
 
 
-single_plot(adapted_path_18, full_transfer=pd.DataFrame(pd.read_csv(path_18 + "data50_full_transfer_18_edit.csv"))["Approx. ratio"].to_numpy().mean())
+single_plot(adapted_path_18, full_transfer=pd.DataFrame(pd.read_csv(abs_path + path_18 + "data50_full_transfer_18_edit.csv"))["Approx. ratio"].to_numpy().mean())
+#multi_plot()
